@@ -1,0 +1,14 @@
+:host {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  background: url(/assets/px-bg.png);
+  background-size: cover;
+  background-position-y: bottom;
+  background-position-x: 75%;
+
+  .playing-field {
+    position: relative;
+    flex: 1 1 auto;
+  }
+}

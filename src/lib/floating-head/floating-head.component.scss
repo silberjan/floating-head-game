@@ -1,0 +1,13 @@
+:host {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  background-position: bottom;
+  transition-property: all;
+  transition-timing-function: linear;
+  transition-duration: 5s;
+  img {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}

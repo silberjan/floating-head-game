@@ -1,0 +1,47 @@
+image: silberjan/dind-node
+
+variables:
+  NODE_ENV: gitlab-ci
+  DOCKER_HOST: 'tcp://docker:2375'
+
+services:
+  - docker:dind
+
+build:
+  stage: build
+  script:
+    - npm install
+    - npm run build:prod -w frontend
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG -t $CI_REGISTRY_IMAGE:latest frontend
+    - docker push $CI_REGISTRY_IMAGE
+  only:
+    - tags
+
+deploy:
+  stage: deploy
+  before_script:
+    - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | head -c8
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" | tr -d '\r' >> ~/.ssh/known_hosts
+  script:
+    - ssh $SSH_USER@$SSH_ADDRESS "cd $DEPLOY_PATH; redeploy $SERVICE_NAME"
+  cache: {}
+  variables:
+    GIT_STRATEGY: none
+  only:
+    - tags
+
+stages:
+  - test
+  - build
+  - deploy
+
+cache:
+  key: node-modules
+  paths:
+    - node_modules/
